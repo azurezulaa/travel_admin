@@ -1,31 +1,43 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 // @mui
 import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
+import { AuthContext } from '../../../context/authContext';
 
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
-  const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('otgo@yahoo.com');
+  const [password, setPassword] = useState('dgdf');
+  const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
 
-  const handleClick = () => {
-    navigate('/dashboard', { replace: true });
+  const handleClick = async () => {
+    try {
+      const result = await axios.post('http://localhost:8000/users/login', { email, password });
+      setUser(result.data.user[0]);
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+        <TextField name="email" label="Имэйл" value={email} />
 
         <TextField
           name="password"
-          label="Password"
+          label="Нууц үг"
           type={showPassword ? 'text' : 'password'}
+          value={password}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -46,7 +58,7 @@ export default function LoginForm() {
       </Stack>
 
       <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
-        Login
+        Нэвтрэх
       </LoadingButton>
     </>
   );

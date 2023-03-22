@@ -1,5 +1,8 @@
+import { useContext } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
+
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
@@ -18,10 +21,17 @@ import {
   AppConversionRates,
 } from '../sections/@dashboard/app';
 
+import { AuthContext } from '../context/authContext';
+
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const theme = useTheme();
+  const { user } = useContext(AuthContext);
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <>
@@ -31,7 +41,7 @@ export default function DashboardAppPage() {
 
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi, Welcome back
+          Hi {user.name}
         </Typography>
 
         <Grid container spacing={3}>
