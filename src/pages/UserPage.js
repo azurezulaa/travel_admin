@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 // @mui
 import {
@@ -11,10 +10,8 @@ import {
   Paper,
   Avatar,
   Button,
-  Popover,
   Checkbox,
   TableRow,
-  MenuItem,
   TableBody,
   TableCell,
   Container,
@@ -23,14 +20,16 @@ import {
   TableContainer,
   TablePagination,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 // components
-import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import USERLIST from '../_mock/user';
+import { AuthContext } from '../context/authContext';
+import CategoryForm from '../components/modals/CategoryForm';
 
 // ----------------------------------------------------------------------
 
@@ -75,8 +74,10 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function UserPage() {
+  const { token } = useContext(AuthContext);
   const [categories, setCategory] = useState([]);
-  const [open, setOpen] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [isNew, setisNew] = useState(false);
 
   const [page, setPage] = useState(0);
 
@@ -89,6 +90,16 @@ export default function UserPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // const categoryDelete = async (id) => {
+  //   try {
+  //     await axios.delete(`http://localhost:8000/categories/${id}`);
+  //     console.log('CAT Ustlaa');
+  //     render();
+  //   } catch (err) {
+  //     console.log('Err', err);
+  //   }
+  // };
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -150,9 +161,14 @@ export default function UserPage() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
-  useEffect(() => {
+  const render = () => {
+    console.log('render ajillaa');
     axios
-      .get('http://localhost:8000/categories')
+      .get('http://localhost:8000/categories', {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => {
         console.log('CAT IRLEE', res.data.categories);
         setCategory(res.data.categories);
@@ -161,8 +177,8 @@ export default function UserPage() {
       .catch((err) => {
         console.log('Err', err);
       });
-  }, []);
-
+  };
+  useEffect(render, []);
   return (
     <>
       <Helmet>
@@ -174,11 +190,17 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             Category
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+          <Button
+            onClick={() => {
+              setisNew(true);
+              setOpen(true);
+            }}
+            variant="contained"
+            startIcon={<Iconify icon="eva:plus-fill" />}
+          >
             Create new category
           </Button>
         </Stack>
-
         {!categories.length && <h4>Хоосон байна</h4>}
         {categories.length > 0 && (
           <Card>
@@ -228,10 +250,20 @@ export default function UserPage() {
                           </TableCell>
 
                           <TableCell align="right">
-                            <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
-                              <Iconify icon={'eva:more-vertical-fill'} />
+                            <IconButton
+                              size="large"
+                              onClick={() => {
+                                setisNew(false);
+                                setOpen(true);
+                              }}
+                            >
+                              <EditIcon sx={{ color: '#1c54b2' }} />
                             </IconButton>
+                            {/* <IconButton size="large" onClick={() => categoryDelete(_id)}>
+                              <DeleteIcon sx={{ color: '#1c54b2' }} />
+                            </IconButton> */}
                           </TableCell>
+                          <CategoryForm open={open} isNew={isNew} setOpen={setOpen} id={_id} render={render} />
                         </TableRow>
                       );
                     })}
@@ -281,35 +313,6 @@ export default function UserPage() {
           </Card>
         )}
       </Container>
-
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
-
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
-      </Popover>
     </>
   );
 }

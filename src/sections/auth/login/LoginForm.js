@@ -13,15 +13,17 @@ import { AuthContext } from '../../../context/authContext';
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('otgo@yahoo.com');
-  const [password, setPassword] = useState('dgdf');
+  const [email, setEmail] = useState('urnaa@gmail.com');
+  const [password, setPassword] = useState('urnaa');
   const navigate = useNavigate();
-  const { setUser } = useContext(AuthContext);
+  const { setUser, setToken } = useContext(AuthContext);
 
   const handleClick = async () => {
     try {
       const result = await axios.post('http://localhost:8000/users/login', { email, password });
-      setUser(result.data.user[0]);
+      console.log(result.data);
+      setUser(result.data.user);
+      setToken(result.data.token);
       navigate('/dashboard', { replace: true });
     } catch (error) {
       console.log(error);
