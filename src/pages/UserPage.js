@@ -75,9 +75,12 @@ function applySortFilter(array, comparator, query) {
 
 export default function UserPage() {
   const { token } = useContext(AuthContext);
-  const [categories, setCategory] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [open, setOpen] = useState(false);
+
   const [isNew, setisNew] = useState(false);
+  const [render, setRender] = useState(false);
 
   const [page, setPage] = useState(0);
 
@@ -100,6 +103,11 @@ export default function UserPage() {
   //     console.log('Err', err);
   //   }
   // };
+
+  const updateCategory = (e) => {
+    console.log(e.target.name);
+    setSelectedCategory({ ...selectedCategory, [e.target.name]: e.target.value });
+  };
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -161,7 +169,7 @@ export default function UserPage() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
-  const render = () => {
+  const getCategories = () => {
     console.log('render ajillaa');
     axios
       .get('http://localhost:8000/categories', {
@@ -171,14 +179,18 @@ export default function UserPage() {
       })
       .then((res) => {
         console.log('CAT IRLEE', res.data.categories);
-        setCategory(res.data.categories);
+        setCategories(res.data.categories);
         setFilteredCategory(res.data.categories);
       })
       .catch((err) => {
         console.log('Err', err);
       });
   };
-  useEffect(render, []);
+
+  useEffect(() => {
+    getCategories();
+  }, [render]);
+
   return (
     <>
       <Helmet>
@@ -255,6 +267,8 @@ export default function UserPage() {
                               onClick={() => {
                                 setisNew(false);
                                 setOpen(true);
+                                setSelectedCategory(row);
+                                console.log('RORR', row);
                               }}
                             >
                               <EditIcon sx={{ color: '#1c54b2' }} />
@@ -263,7 +277,6 @@ export default function UserPage() {
                               <DeleteIcon sx={{ color: '#1c54b2' }} />
                             </IconButton> */}
                           </TableCell>
-                          <CategoryForm open={open} isNew={isNew} setOpen={setOpen} id={_id} render={render} />
                         </TableRow>
                       );
                     })}
@@ -309,6 +322,16 @@ export default function UserPage() {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+
+            <CategoryForm
+              open={open}
+              isNew={isNew}
+              setOpen={setOpen}
+              render={render}
+              setRender={setRender}
+              selectedCategory={selectedCategory}
+              ud={updateCategory}
             />
           </Card>
         )}

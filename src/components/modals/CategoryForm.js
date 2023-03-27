@@ -7,6 +7,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import axios, { AxiosHeaders } from 'axios';
 import Button from '@mui/material/Button';
+import { TextField } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -20,22 +21,17 @@ const style = {
   p: 4,
   pb: 2,
 };
-export default function CategoryForm({ open, setOpen, isNew, id, render }) {
+export default function CategoryForm({ open, setOpen, isNew, id, render, setRender, selectedCategory, ud }) {
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-  const [categoryValues, setCategoryValues] = useState({
-    title: '',
-    description: '',
-    categoryImg: '',
-    categoryRating: 0,
-  });
-
-  const updateCategory = async () => {
+  const updateCategoryById = async () => {
     try {
-      await axios.put(`http://localhost:8000/categories/${id}`, categoryValues);
+      await axios.put(`http://localhost:8000/categories/${selectedCategory._id}`, selectedCategory);
       console.log('CAT shinchlegdlee');
-      render();
+      setRender(!render);
     } catch (err) {
       console.log('Err', err);
     }
@@ -43,7 +39,7 @@ export default function CategoryForm({ open, setOpen, isNew, id, render }) {
 
   const createCategory = async () => {
     try {
-      await axios.post(`http://localhost:8000/categories`, categoryValues);
+      await axios.post(`http://localhost:8000/categories`, selectedCategory);
       console.log('CAT shinchlegdlee');
       render();
     } catch (err) {
@@ -65,68 +61,80 @@ export default function CategoryForm({ open, setOpen, isNew, id, render }) {
       .catch((err) => {
         console.log('Err', err);
       });
-    setCategoryValues({ ...categoryValues, categoryImg: 'url' });
+    // setCategoryValues({ ...categoryValues, categoryImg: 'url' });
   };
 
   const onChangeValue = (e) => {
-    setCategoryValues({ ...categoryValues, [e.target.name]: e.target.value });
+    ud(e);
   };
 
   return (
     <div>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        closeAfterTransition
-        slots={{ backdrop: Backdrop }}
-        slotProps={{
-          backdrop: {
-            timeout: 500,
-          },
-        }}
-      >
-        <Fade in={open}>
-          <Box sx={style}>
-            <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-              <div>
-                <InputLabel>Нэр</InputLabel>
-                <OutlinedInput placeholder="" name="title" onChange={onChangeValue}>
-                  Text in a modal kjsdfjdslkfdsl;kf
-                </OutlinedInput>
-                <InputLabel>Тайлбар</InputLabel>
-                <OutlinedInput onChange={onChangeValue} placeholder="">
-                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                </OutlinedInput>
-              </div>
-              <div>
-                <InputLabel>Зураг</InputLabel>
-                <OutlinedInput type="file" placeholder="" onChange={getImgUrl}>
-                  {/* onChange={getImgUrl} */}
-                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                </OutlinedInput>
-                <InputLabel>Үнэлгээ</InputLabel>
-                <OutlinedInput placeholder="" onChange={onChangeValue}>
-                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                </OutlinedInput>
-              </div>
+      {selectedCategory && (
+        <Modal
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+            },
+          }}
+        >
+          <Fade in={open}>
+            <Box sx={style}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                <div>
+                  <InputLabel>Нэр</InputLabel>
+                  <TextField value={selectedCategory.title} name="title" onChange={onChangeValue}>
+                    Text in a modal kjsdfjdslkfdsl;kf
+                  </TextField>
+                  <InputLabel>Тайлбар</InputLabel>
+                  <OutlinedInput
+                    value={selectedCategory.description}
+                    name="description"
+                    onChange={onChangeValue}
+                    placeholder=""
+                  >
+                    Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                  </OutlinedInput>
+                </div>
+                <div>
+                  <InputLabel>Зураг</InputLabel>
+                  <OutlinedInput type="file" placeholder="" onChange={getImgUrl}>
+                    {/* onChange={getImgUrl} */}
+                    Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                  </OutlinedInput>
+                  <InputLabel>Үнэлгээ</InputLabel>
+                  <OutlinedInput
+                    value={selectedCategory.categoryRating}
+                    name="categoryRating"
+                    placeholder=""
+                    onChange={onChangeValue}
+                  >
+                    Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                  </OutlinedInput>
+                </div>
+              </Box>
+              <Box sx={{ textAlign: 'center', mt: 2 }}>
+                <Button
+                  onClick={() => {
+                    if (isNew) {
+                      createCategory();
+                    } else {
+                      updateCategoryById();
+                    }
+                    setOpen(false);
+                  }}
+                >
+                  Хадгалах
+                </Button>
+              </Box>
             </Box>
-            <Box sx={{ textAlign: 'center', mt: 2 }}>
-              <Button
-                onClick={() => {
-                  if (isNew) {
-                    createCategory();
-                  } else {
-                    updateCategory();
-                  }
-                  setOpen(false);
-                }}
-              >
-                Хадгалах
-              </Button>
-            </Box>
-          </Box>
-        </Fade>
-      </Modal>
+          </Fade>
+        </Modal>
+      )}
     </div>
   );
 }
