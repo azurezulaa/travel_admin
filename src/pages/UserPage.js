@@ -21,6 +21,7 @@ import {
   TablePagination,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 // components
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
@@ -38,8 +39,7 @@ const TABLE_HEAD = [
   { id: 'description', label: 'Тайлбар', alignRight: false },
   { id: 'categoryImg', label: 'Зураг', alignRight: false },
   { id: 'categoryRating', label: 'Үнэлгээ', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: '' },
+  { id: 'role', label: 'Үйлдэл', alignRight: true },
 ];
 
 // ----------------------------------------------------------------------
@@ -77,9 +77,10 @@ export default function UserPage() {
   const { token } = useContext(AuthContext);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
   const [open, setOpen] = useState(false);
 
-  const [isNew, setisNew] = useState(false);
+  const [isNew, setIsNew] = useState(false);
   const [render, setRender] = useState(false);
 
   const [page, setPage] = useState(0);
@@ -94,27 +95,27 @@ export default function UserPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  // const categoryDelete = async (id) => {
-  //   try {
-  //     await axios.delete(`http://localhost:8000/categories/${id}`);
-  //     console.log('CAT Ustlaa');
-  //     render();
-  //   } catch (err) {
-  //     console.log('Err', err);
-  //   }
-  // };
+  const categoryDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/categories/${id}`);
+      console.log('CAT Ustlaa');
+      setRender(!render);
+    } catch (err) {
+      console.log('Err', err);
+    }
+  };
 
   const updateCategory = (e) => {
     console.log(e.target.name);
     setSelectedCategory({ ...selectedCategory, [e.target.name]: e.target.value });
   };
 
-  const handleOpenMenu = (event) => {
-    setOpen(event.currentTarget);
+  const handleOpen = () => {
+    setOpen(true);
   };
 
-  const handleCloseMenu = () => {
-    setOpen(null);
+  const handleClose = () => {
+    setOpen(false);
   };
 
   const handleRequestSort = (event, property) => {
@@ -202,13 +203,14 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             Category
           </Typography>
+
           <Button
-            onClick={() => {
-              setisNew(true);
-              setOpen(true);
-            }}
             variant="contained"
             startIcon={<Iconify icon="eva:plus-fill" />}
+            onClick={() => {
+              handleOpen();
+              setIsNew(true);
+            }}
           >
             Create new category
           </Button>
@@ -265,17 +267,16 @@ export default function UserPage() {
                             <IconButton
                               size="large"
                               onClick={() => {
-                                setisNew(false);
-                                setOpen(true);
+                                setIsNew(false);
                                 setSelectedCategory(row);
-                                console.log('RORR', row);
+                                handleOpen();
                               }}
                             >
                               <EditIcon sx={{ color: '#1c54b2' }} />
                             </IconButton>
-                            {/* <IconButton size="large" onClick={() => categoryDelete(_id)}>
+                            <IconButton size="large" onClick={() => categoryDelete(_id)}>
                               <DeleteIcon sx={{ color: '#1c54b2' }} />
-                            </IconButton> */}
+                            </IconButton>
                           </TableCell>
                         </TableRow>
                       );
@@ -327,7 +328,7 @@ export default function UserPage() {
             <CategoryForm
               open={open}
               isNew={isNew}
-              setOpen={setOpen}
+              handleClose={handleClose}
               render={render}
               setRender={setRender}
               selectedCategory={selectedCategory}

@@ -5,7 +5,7 @@ import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
-import axios, { AxiosHeaders } from 'axios';
+import axios from 'axios';
 import Button from '@mui/material/Button';
 import { TextField } from '@mui/material';
 
@@ -21,10 +21,20 @@ const style = {
   p: 4,
   pb: 2,
 };
-export default function CategoryForm({ open, setOpen, isNew, id, render, setRender, selectedCategory, ud }) {
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
+export default function CategoryForm({ open, handleClose, isNew, render, setRender, selectedCategory, ud }) {
+  const [newCat, setNewCat] = useState({
+    title: '',
+    description: '',
+    categoryImg: '',
+    categoryRating: '',
+  });
+
+  const handleChange = (e) => {
+    if (isNew) {
+      setNewCat({ ...newCat, [e.target.name]: e.target.value });
+    } else {
+      ud(e);
+    }
   };
 
   const updateCategoryById = async () => {
@@ -34,107 +44,99 @@ export default function CategoryForm({ open, setOpen, isNew, id, render, setRend
       setRender(!render);
     } catch (err) {
       console.log('Err', err);
+    } finally {
+      handleClose();
     }
   };
 
   const createCategory = async () => {
     try {
-      await axios.post(`http://localhost:8000/categories`, selectedCategory);
+      await axios.post(`http://localhost:8000/categories`, newCat);
       console.log('CAT shinchlegdlee');
-      render();
+      setRender(!render);
+    } catch (err) {
+      console.log('Err', err);
+    } finally {
+      setNewCat({
+        title: '',
+        description: '',
+        categoryImg: '',
+        categoryRating: '',
+      });
+      handleClose();
+    }
+  };
+
+  const getImgUrl = async (e) => {
+    try {
+      const bodyData = new FormData();
+      bodyData.append('image', e.target.files[0]);
+      const res = await axios.post(`http://localhost:8000/upload`, bodyData);
+
+      console.log(res);
+      if (isNew) {
+        setNewCat({ ...newCat, categoryImg: res.data.imgUrl });
+      } else {
+        ud({ ...selectedCategory, categoryImg: res.data.imgUrl });
+      }
     } catch (err) {
       console.log('Err', err);
     }
   };
 
-  const getImgUrl = async (e) => {
-    // await url
-    // console.log(e.target.files[0]);
-    const bodyData = new FormData();
-    bodyData.append('image', e.target.files[0]);
-    console.log(bodyData, 'asdasd');
-    await axios
-      .post(`http://localhost:8000/upload`, bodyData)
-      .then((res) => {
-        console.log('RES', res);
-      })
-      .catch((err) => {
-        console.log('Err', err);
-      });
-    // setCategoryValues({ ...categoryValues, categoryImg: 'url' });
-  };
-
-  const onChangeValue = (e) => {
-    ud(e);
-  };
-
   return (
     <div>
-      {selectedCategory && (
-        <Modal
-          open={open}
-          onClose={handleClose}
-          closeAfterTransition
-          slots={{ backdrop: Backdrop }}
-          slotProps={{
-            backdrop: {
-              timeout: 500,
-            },
-          }}
-        >
-          <Fade in={open}>
-            <Box sx={style}>
-              <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                <div>
-                  <InputLabel>Нэр</InputLabel>
-                  <TextField value={selectedCategory.title} name="title" onChange={onChangeValue}>
-                    Text in a modal kjsdfjdslkfdsl;kf
-                  </TextField>
-                  <InputLabel>Тайлбар</InputLabel>
-                  <OutlinedInput
-                    value={selectedCategory.description}
-                    name="description"
-                    onChange={onChangeValue}
-                    placeholder=""
-                  >
-                    Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                  </OutlinedInput>
-                </div>
-                <div>
-                  <InputLabel>Зураг</InputLabel>
-                  <OutlinedInput type="file" placeholder="" onChange={getImgUrl}>
-                    {/* onChange={getImgUrl} */}
-                    Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                  </OutlinedInput>
-                  <InputLabel>Үнэлгээ</InputLabel>
-                  <OutlinedInput
-                    value={selectedCategory.categoryRating}
-                    name="categoryRating"
-                    placeholder=""
-                    onChange={onChangeValue}
-                  >
-                    Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                  </OutlinedInput>
-                </div>
-              </Box>
-              <Box sx={{ textAlign: 'center', mt: 2 }}>
-                <Button
-                  onClick={() => {
-                    if (isNew) {
-                      createCategory();
-                    } else {
-                      updateCategoryById();
-                    }
-                    setOpen(false);
-                  }}
+      {console.log(isNew)}
+      <Modal open={open} onClose={handleClose}>
+        <Fade in={open}>
+          <Box sx={style}>
+            <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+              <div>
+                <InputLabel>Нэр</InputLabel>
+                <TextField value={isNew ? newCat.title : selectedCategory?.title} name="title" onChange={handleChange}>
+                  Text in a modal kjsdfjdslkfdsl;kf
+                </TextField>
+                <InputLabel>Тайлбар</InputLabel>
+                <OutlinedInput
+                  value={isNew ? newCat.description : selectedCategory?.description}
+                  name="description"
+                  onChange={handleChange}
                 >
-                  Хадгалах
-                </Button>
-              </Box>
+                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                </OutlinedInput>
+              </div>
+              <div>
+                <InputLabel>Зураг</InputLabel>
+                <OutlinedInput type="file" onChange={getImgUrl}>
+                  {/* onChange={getImgUrl} */}
+                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                </OutlinedInput>
+                <InputLabel>Үнэлгээ</InputLabel>
+                <OutlinedInput
+                  value={isNew ? newCat.categoryRating : selectedCategory?.categoryRating}
+                  name="categoryRating"
+                  onChange={handleChange}
+                >
+                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                </OutlinedInput>
+              </div>
             </Box>
-          </Fade>
-        </Modal>
-      )}
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Button
+                onClick={() => {
+                  if (isNew) {
+                    createCategory();
+                  } else {
+                    updateCategoryById();
+                  }
+                }}
+              >
+                Хадгалах
+              </Button>
+            </Box>
+          </Box>
+        </Fade>
+      </Modal>
     </div>
   );
 }

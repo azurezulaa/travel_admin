@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
+import axios from 'axios';
 // @mui
-import { Box, Card, Link, Typography, Stack } from '@mui/material';
+import { Box, Card, Link, Typography, Stack, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 // utils
 import { fCurrency } from '../../../utils/formatNumber';
 // components
-import Label from '../../../components/label';
-import { ColorPreview } from '../../../components/color-utils';
 
 // ----------------------------------------------------------------------
 
@@ -24,13 +25,23 @@ ShopProductCard.propTypes = {
   product: PropTypes.object,
 };
 
-export default function ShopProductCard({ product }) {
-  const { name, cover, price, colors, status, priceSale } = product;
+export default function ShopProductCard({ travel, setRender, render, handleOpen, setOpen, setDeleteID }) {
+  const { _id, title, travelPrice, travelImg } = travel;
+
+  const updateTravel = async (id) => {
+    // try {
+    //   await axios.update(`http://localhost:8000/travels/${id}`);
+    //   console.log('CAT Ustlaa');
+    //   setRender(!render);
+    // } catch (err) {
+    //   console.log('Err', err);
+    // }
+  };
 
   return (
     <Card>
       <Box sx={{ pt: '100%', position: 'relative' }}>
-        {status && (
+        {/* {status && (
           <Label
             variant="filled"
             color={(status === 'sale' && 'error') || 'info'}
@@ -44,19 +55,18 @@ export default function ShopProductCard({ product }) {
           >
             {status}
           </Label>
-        )}
-        <StyledProductImg alt={name} src={cover} />
+        )} */}
+        <StyledProductImg alt={title} src={travelImg} />
       </Box>
 
       <Stack spacing={2} sx={{ p: 3 }}>
         <Link color="inherit" underline="hover">
           <Typography variant="subtitle2" noWrap>
-            {name}
+            {title}
           </Typography>
         </Link>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <ColorPreview colors={colors} />
           <Typography variant="subtitle1">
             <Typography
               component="span"
@@ -66,11 +76,31 @@ export default function ShopProductCard({ product }) {
                 textDecoration: 'line-through',
               }}
             >
-              {priceSale && fCurrency(priceSale)}
+              {/* {priceSale && fCurrency(priceSale)} */}
             </Typography>
             &nbsp;
-            {fCurrency(price)}
+            {fCurrency(travelPrice)}
           </Typography>
+          <div>
+            <IconButton size="large">
+              <EditIcon
+                sx={{ color: '#1c54b2' }}
+                onClick={() => {
+                  updateTravel(_id);
+                  handleOpen();
+                }}
+              />
+            </IconButton>
+            <IconButton
+              size="large"
+              onClick={() => {
+                setOpen(true);
+                setDeleteID(_id);
+              }}
+            >
+              <DeleteIcon sx={{ color: '#1c54b2' }} />
+            </IconButton>
+          </div>
         </Stack>
       </Stack>
     </Card>
