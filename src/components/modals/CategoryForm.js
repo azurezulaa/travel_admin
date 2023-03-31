@@ -86,7 +86,6 @@ export default function CategoryForm({ open, handleClose, isNew, render, setRend
 
   return (
     <div>
-      {console.log(isNew)}
       <Modal open={open} onClose={handleClose}>
         <Fade in={open}>
           <Box sx={style}>

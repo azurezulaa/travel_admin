@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import axios from 'axios';
 // @mui
 import { Box, Card, Link, Typography, Stack, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
@@ -25,19 +24,8 @@ ShopProductCard.propTypes = {
   product: PropTypes.object,
 };
 
-export default function ShopProductCard({ travel, setRender, render, handleOpen, setOpen, setDeleteID }) {
+export default function ShopProductCard({ travel, handleOpen, setOpen, setDeleteID, setIsNew, setSelectedTravel }) {
   const { _id, title, travelPrice, travelImg } = travel;
-
-  const updateTravel = async (id) => {
-    // try {
-    //   await axios.update(`http://localhost:8000/travels/${id}`);
-    //   console.log('CAT Ustlaa');
-    //   setRender(!render);
-    // } catch (err) {
-    //   console.log('Err', err);
-    // }
-  };
-
   return (
     <Card>
       <Box sx={{ pt: '100%', position: 'relative' }}>
@@ -86,8 +74,9 @@ export default function ShopProductCard({ travel, setRender, render, handleOpen,
               <EditIcon
                 sx={{ color: '#1c54b2' }}
                 onClick={() => {
-                  updateTravel(_id);
+                  setSelectedTravel(travel);
                   handleOpen();
+                  setIsNew(false);
                 }}
               />
             </IconButton>

@@ -14,15 +14,24 @@ ProductList.propTypes = {
   products: PropTypes.array.isRequired,
 };
 
-export default function ProductList({ travels, setRender, render, handleOpen, ...other }) {
+export default function ProductList({
+  travels,
+  setRender,
+  render,
+  handleOpen,
+  setIsNew,
+  setSelectedTravel,
+  setTravel,
+  ...other
+}) {
   const [open, setOpen] = useState(false);
   const [deleteID, setDeleteID] = useState(null);
 
-  const deleteTravel = async (id) => {
-    console.log('DELETETRAVEL ajillaa', id);
+  const handleClose = () => setOpen(false);
+
+  const deleteTravel = async () => {
     try {
-      await axios.delete(`http://localhost:8000/travels/${id}`);
-      console.log('CAT Ustlaa');
+      await axios.delete(`http://localhost:8000/travels/${deleteID}`);
       setRender(!render);
     } catch (err) {
       console.log('Err', err);
@@ -40,10 +49,12 @@ export default function ProductList({ travels, setRender, render, handleOpen, ..
             handleOpen={handleOpen}
             setOpen={setOpen}
             setDeleteID={setDeleteID}
+            setIsNew={setIsNew}
+            setSelectedTravel={setSelectedTravel}
           />
         </Grid>
       ))}
-      <DeleteModal open={open} setOpen={setOpen} deleteTravel={deleteTravel} deleteID={deleteID} />
+      <DeleteModal open={open} handleClose={handleClose} yes={deleteTravel} />
     </Grid>
   );
 }

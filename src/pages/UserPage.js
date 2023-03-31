@@ -31,6 +31,7 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 import USERLIST from '../_mock/user';
 import { AuthContext } from '../context/authContext';
 import CategoryForm from '../components/modals/CategoryForm';
+import DeleteModal from '../components/modals/DeleteModal';
 
 // ----------------------------------------------------------------------
 
@@ -79,7 +80,8 @@ export default function UserPage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const [open, setOpen] = useState(false);
-
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteID, setDeleteID] = useState(null);
   const [isNew, setIsNew] = useState(false);
   const [render, setRender] = useState(false);
 
@@ -95,9 +97,9 @@ export default function UserPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const categoryDelete = async (id) => {
+  const categoryDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8000/categories/${id}`);
+      await axios.delete(`http://localhost:8000/categories/${deleteID}`);
       console.log('CAT Ustlaa');
       setRender(!render);
     } catch (err) {
@@ -106,7 +108,6 @@ export default function UserPage() {
   };
 
   const updateCategory = (e) => {
-    console.log(e.target.name);
     setSelectedCategory({ ...selectedCategory, [e.target.name]: e.target.value });
   };
 
@@ -116,6 +117,13 @@ export default function UserPage() {
 
   const handleClose = () => {
     setOpen(false);
+  };
+  const openDeleteModal = () => {
+    setDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal(false);
   };
 
   const handleRequestSort = (event, property) => {
@@ -274,7 +282,13 @@ export default function UserPage() {
                             >
                               <EditIcon sx={{ color: '#1c54b2' }} />
                             </IconButton>
-                            <IconButton size="large" onClick={() => categoryDelete(_id)}>
+                            <IconButton
+                              size="large"
+                              onClick={() => {
+                                openDeleteModal();
+                                setDeleteID(_id);
+                              }}
+                            >
                               <DeleteIcon sx={{ color: '#1c54b2' }} />
                             </IconButton>
                           </TableCell>
@@ -334,6 +348,7 @@ export default function UserPage() {
               selectedCategory={selectedCategory}
               ud={updateCategory}
             />
+            <DeleteModal open={deleteModal} handleClose={closeDeleteModal} yes={categoryDelete} />
           </Card>
         )}
       </Container>

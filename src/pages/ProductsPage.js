@@ -14,11 +14,13 @@ import TravelForm from '../components/modals/TravelForm';
 
 export default function ProductsPage() {
   const { token } = useContext(AuthContext);
+  const [isNew, setIsNew] = useState(true);
   const [openFilter, setOpenFilter] = useState(false);
   const [travels, setTravels] = useState([]);
   const [render, setRender] = useState(false);
-
+  const [selectedTravel, setSelectedTravel] = useState({});
   const [open, setOpen] = useState(false);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -39,11 +41,19 @@ export default function ProductsPage() {
       })
       .then((res) => {
         setTravels(res.data.travels);
-        console.log('TRAVELS', res.data);
       })
       .catch((err) => {
         console.log('Err', err);
       });
+  };
+
+  const updateTravel = async () => {
+    try {
+      await axios.put(`http://localhost:8000/travels/${selectedTravel._id}`, selectedTravel);
+      setRender(!render);
+    } catch (err) {
+      console.log('Err', err);
+    }
   };
 
   useEffect(() => {
@@ -68,7 +78,13 @@ export default function ProductsPage() {
           justifyContent="space-between"
           sx={{ mb: 5 }}
         >
-          <Button variant="contained" onClick={handleOpen}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              handleOpen();
+              setIsNew(true);
+            }}
+          >
             Create new travel
           </Button>
           <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
@@ -82,11 +98,28 @@ export default function ProductsPage() {
         </Stack>
 
         {travels?.length > 0 && (
-          <ProductList travels={travels} setRender={setRender} render={render} handleOpen={handleOpen} />
+          <ProductList
+            travels={travels}
+            setRender={setRender}
+            render={render}
+            handleOpen={handleOpen}
+            setIsNew={setIsNew}
+            setSelectedTravel={setSelectedTravel}
+          />
         )}
         <ProductCartWidget />
       </Container>
-      <TravelForm open={open} handleClose={handleClose} />
+      <TravelForm
+        open={open}
+        handleClose={handleClose}
+        setIsNew={setIsNew}
+        isNew={isNew}
+        setRender={setRender}
+        render={render}
+        updateTravel={updateTravel}
+        selectedTravel={selectedTravel}
+        setSelectedTravel={setSelectedTravel}
+      />
     </>
   );
 }

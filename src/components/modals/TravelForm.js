@@ -1,8 +1,10 @@
-import * as React from 'react';
+import { useState } from 'react';
+import axios from 'axios';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
+import { TextField } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -16,22 +18,104 @@ const style = {
   p: 4,
 };
 
-export default function TravelForm({ handleClose, open }) {
+export default function TravelForm({
+  handleClose,
+  open,
+  isNew,
+  render,
+  setRender,
+  updateTravel,
+  selectedTravel,
+  setSelectedTravel,
+}) {
+  const [newTravel, setNewTravel] = useState({
+    title: '',
+    travelLocation: '',
+    travelPrice: '',
+    travelDay: '',
+    travelImg: '',
+    category: '',
+  });
+  const updateValues = (e) => {
+    setSelectedTravel({ ...selectedTravel, [e.target.name]: e.target.value });
+  };
+  const handleChange = (e) => {
+    if (isNew) {
+      setNewTravel({ ...newTravel, [e.target.name]: e.target.value });
+    } else {
+      updateValues(e);
+    }
+  };
+
+  const createTravel = async () => {
+    try {
+      await axios.post(`http://localhost:8000/travels`, newTravel);
+      setRender(!render);
+    } catch (err) {
+      console.log('Err', err);
+    } finally {
+      handleClose();
+    }
+  };
+
   return (
     <div>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
+      <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Text in a modal
-          </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-          </Typography>
+          <TextField
+            id="outlined-helperText"
+            name="title"
+            label="title"
+            value={isNew ? newTravel.title : selectedTravel.title}
+            onChange={handleChange}
+          />
+          <TextField
+            id="outlined-helperText"
+            name="travelImg"
+            label="image"
+            value={isNew ? newTravel.travelImg : selectedTravel.travelImg}
+            onChange={handleChange}
+          />
+          <TextField
+            id="outlined-helperText"
+            name="travelPrice"
+            label="price"
+            value={isNew ? newTravel.travelPrice : selectedTravel.travelPrice}
+            onChange={handleChange}
+          />
+          <TextField
+            id="outlined-helperText"
+            name="travelDay"
+            label="day"
+            value={isNew ? newTravel.travelDay : selectedTravel.travelDay}
+            onChange={handleChange}
+          />
+          <TextField
+            id="outlined-helperText"
+            name="travelLocation"
+            label="location"
+            value={isNew ? newTravel.travelLocation : selectedTravel.travelLocation}
+            onChange={handleChange}
+          />
+          <TextField
+            id="outlined-helperText"
+            name="category"
+            label="category"
+            value={isNew ? newTravel.category : selectedTravel.category}
+            onChange={handleChange}
+          />
+          <Button
+            onClick={() => {
+              if (isNew) {
+                createTravel();
+              } else {
+                updateTravel();
+                handleClose();
+              }
+            }}
+          >
+            Submit
+          </Button>
         </Box>
       </Modal>
     </div>
